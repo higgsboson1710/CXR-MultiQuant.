@@ -121,15 +121,18 @@ flowchart LR
         C3["impression: Doctor's final conclusion"]
     end
 
-    subgraph LABELING["Severity Label Generation"]
+    subgraph LABELING["Severity Label Generation (CheXpert Approach)"]
         direction TB
-        RULE["Rule-Based NLP\nKeyword Search on Impression"]
-        S1["'severe' / 'extensive' / 'massive' → Severe"]
-        S2["'moderate' / 'partial' → Moderate"]
-        S3["Everything else → Mild"]
-        RULE --> S1
-        RULE --> S2
-        RULE --> S3
+        EXTRACT["Extract 14 Disease Labels\n(e.g., Pneumonia, Edema)"]
+        WEIGHT["Apply Severity Weights\n(Based on clinical impact)"]
+        SCORE["Calculate Total Risk Score\n(Sum of weighted diseases)"]
+        S1["High Score → Severe"]
+        S2["Medium Score → Moderate"]
+        S3["Low Score → Mild"]
+        EXTRACT --> WEIGHT --> SCORE
+        SCORE --> S1
+        SCORE --> S2
+        SCORE --> S3
     end
 
     subgraph FINAL["Final Dataset"]
