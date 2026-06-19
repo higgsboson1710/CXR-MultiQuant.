@@ -35,6 +35,8 @@ raw_data/
 *.zip
 *.tar.gz
 *.tgz
+*.csv
+keras_tuner_dir/
 
 # Model weights and checkpoints
 *.h5
