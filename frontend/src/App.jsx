@@ -118,13 +118,13 @@ function App() {
           <div className="bg-blue-600 p-2 rounded-lg shadow-md shadow-blue-600/20">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Medi<span className="text-blue-600">Sync</span> CXR</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">CXR-<span className="text-blue-600">MultiQuant</span></h1>
         </div>
         
         <div className="flex gap-6 text-gray-500 font-medium">
           <button className="text-blue-600 bg-blue-50 px-5 py-2 rounded-full border border-blue-100">Dashboard</button>
           <button className="hover:text-gray-900 px-4 py-2 transition-colors">Patients</button>
-          <button className="hover:text-gray-900 px-4 py-2 transition-colors">Imaging</button>
+          <button className="hover:text-gray-900 px-4 py-2 transition-colors">Records</button>
         </div>
 
         <button 
@@ -140,36 +140,40 @@ function App() {
           {/* Left Column: Live Metrics & Patient List */}
           <div className="xl:col-span-1 space-y-6">
             
-            {/* Live Metrics Card */}
+            {/* Patient Demographics Card */}
             <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
               <h3 className="text-gray-900 font-bold mb-4 flex justify-between items-center text-lg">
-                Patient Vitals
-                <svg className="w-5 h-5 text-gray-400 cursor-pointer hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                Active Patient
+                <svg className="w-5 h-5 text-gray-400 cursor-pointer hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
               </h3>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 hover:border-blue-200 transition-colors">
-                  <div className="text-blue-500 mb-2"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
-                  <p className="text-xs text-gray-500 font-medium mb-1">Heart Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">82 <span className="text-xs font-normal text-gray-500">Bpm</span></p>
+              <div className="space-y-3">
+                <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 flex justify-between items-center">
+                  <span className="text-sm text-gray-500 font-medium">Name</span>
+                  <span className="text-base font-bold text-gray-900">John Doe</span>
                 </div>
-                <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 hover:border-blue-200 transition-colors">
-                  <div className="text-blue-500 mb-2"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg></div>
-                  <p className="text-xs text-gray-500 font-medium mb-1">O2 Saturation</p>
-                  <p className="text-2xl font-bold text-gray-900 text-blue-600">98% <span className="text-xs font-normal text-gray-500">SpO2</span></p>
+                <div className="flex gap-3">
+                  <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 flex-1 flex flex-col justify-center items-center">
+                    <span className="text-xs text-gray-500 font-medium mb-1">Age</span>
+                    <span className="text-xl font-bold text-gray-900">45 <span className="text-xs font-normal text-gray-500">Yrs</span></span>
+                  </div>
+                  <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 flex-1 flex flex-col justify-center items-center">
+                    <span className="text-xs text-gray-500 font-medium mb-1">Gender</span>
+                    <span className="text-xl font-bold text-gray-900 text-blue-600">M</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Patients Queue */}
             <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
-              <h3 className="text-gray-900 font-bold mb-4 text-lg">Appointments</h3>
+              <h3 className="text-gray-900 font-bold mb-4 text-lg">Scan Queue</h3>
               <div className="space-y-3">
                 <div className="bg-blue-600 p-4 rounded-2xl cursor-pointer text-white shadow-lg shadow-blue-600/30">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold">SM</div>
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold">JD</div>
                     <div>
-                      <p className="font-semibold text-sm">Dr. Sarah Mitchell</p>
+                      <p className="font-semibold text-sm">John Doe</p>
                       <p className="text-blue-100 text-xs mt-0.5">Suspected Pneumonia</p>
                     </div>
                   </div>
@@ -177,9 +181,9 @@ function App() {
                 
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">KR</div>
+                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">AS</div>
                     <div>
-                      <p className="font-semibold text-sm text-gray-800">Dr. Kevin Ross</p>
+                      <p className="font-semibold text-sm text-gray-800">Alice Smith</p>
                       <p className="text-gray-500 text-xs mt-0.5">Routine Scan</p>
                     </div>
                   </div>
@@ -188,9 +192,9 @@ function App() {
 
                 <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">MC</div>
+                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">RJ</div>
                     <div>
-                      <p className="font-semibold text-sm text-gray-800">Dr. Mia Chen</p>
+                      <p className="font-semibold text-sm text-gray-800">Robert Jones</p>
                       <p className="text-gray-500 text-xs mt-0.5">Effusion Checkup</p>
                     </div>
                   </div>
@@ -206,9 +210,9 @@ function App() {
             <div className="bg-white rounded-3xl shadow-[0_4px_25px_-5px_rgba(6,81,237,0.08)] border border-gray-100 h-full overflow-hidden flex flex-col relative">
               <div className="p-5 flex justify-between items-center bg-white z-10">
                 <div className="flex gap-2">
-                  <button className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-sm font-medium shadow-sm">Home</button>
-                  <button className="px-4 py-1.5 text-gray-500 hover:text-gray-900 rounded-full text-sm font-medium transition-colors">Overview</button>
-                  <button className="px-4 py-1.5 text-gray-500 hover:text-gray-900 rounded-full text-sm font-medium transition-colors">Imaging</button>
+                  <button className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-sm font-medium shadow-sm">X-Ray Scan</button>
+                  <button className="px-4 py-1.5 text-gray-500 hover:text-gray-900 rounded-full text-sm font-medium transition-colors">AI Report</button>
+                  <button className="px-4 py-1.5 text-gray-500 hover:text-gray-900 rounded-full text-sm font-medium transition-colors">Patient History</button>
                 </div>
                 <div className="flex gap-2">
                   <button className="p-2 bg-gray-50 text-gray-600 rounded-full hover:bg-gray-100 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg></button>
@@ -228,7 +232,7 @@ function App() {
                   </div>
                 </div>
 
-                {/* Floating AI Diagnostic Bubble (MediSync Style) */}
+                {/* Floating AI Diagnostic Bubble */}
                 <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 max-w-xs z-20">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
