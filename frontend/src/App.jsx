@@ -6,11 +6,10 @@ function App() {
   const [patientAge, setPatientAge] = useState("45")
   const [patientGender, setPatientGender] = useState("M")
 
-
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gray-50 flex">
-        {}
+        {/* Login Page */}
         <div className="w-1/2 relative flex items-center justify-center overflow-hidden">
           {}
           <img 
@@ -19,8 +18,7 @@ function App() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           
-          {/* The Dim/Dark Blue Overlay so the text is readable */}
-          <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-[2px]"></div>
+                    <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-[2px]"></div>
           
           {}
           <div className="relative z-10 text-center text-white px-12 border border-white/10 bg-white/5 p-12 rounded-3xl backdrop-blur-md shadow-2xl">
@@ -29,11 +27,10 @@ function App() {
           </div>
         </div>
 
-        {/* Right Side: Login Form */}
+        {/* Login Form */}
         <div className="w-1/2 flex items-center justify-center p-8 bg-white relative">
           
-          {/* Enterprise Feature: System Status Indicator */}
-          <div className="absolute top-8 right-8 flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full shadow-sm">
+                    <div className="absolute top-8 right-8 flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full shadow-sm">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
             <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">PACS Server Connected</span>
           </div>
@@ -80,15 +77,13 @@ function App() {
                 Secure Sign In
               </button>
 
-              {/* Enterprise Feature: SSO Divider */}
-              <div className="relative flex items-center py-2">
+                            <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-gray-200"></div>
                 <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-bold uppercase tracking-wider">Or</span>
                 <div className="flex-grow border-t border-gray-200"></div>
               </div>
 
-              {/* Enterprise Feature: SSO Button */}
-              <button 
+                            <button 
                 onClick={() => setIsLoggedIn(true)}
                 className="w-full bg-white hover:bg-gray-50 text-gray-700 font-bold py-3.5 rounded-xl transition-all border border-gray-200 shadow-sm flex items-center justify-center gap-3">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -96,8 +91,7 @@ function App() {
               </button>
             </div>
 
-            {/* Enterprise Feature: HIPAA Badge */}
-            <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col items-center justify-center text-center">
+                        <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col items-center justify-center text-center">
               <div className="flex items-center gap-1.5 text-gray-400 mb-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                 <span className="text-xs font-bold uppercase tracking-wider">HIPAA Compliant System</span>
@@ -111,7 +105,7 @@ function App() {
     )
   }
 
-  // Screen 2: Light Mode Medical Dashboard
+  {/* Main Dashboard */}
   return (
     <div className="min-h-screen bg-[#f8fafc] text-gray-900 font-sans pb-10">
       
@@ -140,11 +134,10 @@ function App() {
       <div className="max-w-[1400px] mx-auto px-6 mt-8">
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
           
-          {/* Left Column: Live Metrics & Patient List */}
+          {/* Patient Data */}
           <div className="xl:col-span-1 space-y-6">
             
-            {/* Patient Demographics Card */}
-            <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
+                        <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
               <h3 className="text-gray-900 font-bold mb-4 flex justify-between items-center text-lg">
                 Active Patient
                 <svg className="w-5 h-5 text-gray-400 cursor-pointer hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -168,7 +161,7 @@ function App() {
               </div>
             </div>
 
-            {/* Patients Queue */}
+            {/* Scan Queue */}
             <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
               <h3 className="text-gray-900 font-bold mb-4 text-lg">Scan Queue</h3>
               <div className="space-y-3">
@@ -208,7 +201,7 @@ function App() {
 
           </div>
 
-          {/* Center Column: The Visual Scan */}
+          {/* Main Visuals */}
           <div className="xl:col-span-2">
             <div className="bg-white rounded-3xl shadow-[0_4px_25px_-5px_rgba(6,81,237,0.08)] border border-gray-100 h-full overflow-hidden flex flex-col relative">
               <div className="p-5 flex justify-between items-center bg-white z-10">
@@ -224,7 +217,7 @@ function App() {
               
               <div className="flex-grow bg-[#f8fafc] flex flex-col items-center justify-center relative p-8 m-2 rounded-2xl border border-gray-100 overflow-hidden">
                 
-                {/* NEW: Patient Intake Form */}
+                {/* Intake Form */}
                 <div className="w-full max-w-2xl bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8 z-10 relative">
                   <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Patient Intake Form</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -262,7 +255,7 @@ function App() {
                   </div>
                 </div>
 
-                {/* Image Placeholder - Awaiting User Upload */}
+                {/* Image Upload */}
                 <div className="w-full flex flex-col items-center justify-center text-center max-w-lg z-10 relative">
                   <div className="bg-white p-12 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm w-full hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer">
                     <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -273,8 +266,7 @@ function App() {
                   </div>
                 </div>
 
-                {/* Floating AI Diagnostic Bubble */}
-                <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 max-w-xs z-20">
+                                <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 max-w-xs z-20">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
                     <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">Awaiting Scan</p>
@@ -287,7 +279,7 @@ function App() {
             </div>
           </div>
 
-          {/* Right Column: AI Analysis & Action */}
+          {/* AI Tools */}
           <div className="xl:col-span-1 space-y-6">
             
             <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
@@ -298,8 +290,7 @@ function App() {
               
               <div className="space-y-4">
                 
-                {/* Pill 1 */}
-                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:border-blue-300 cursor-pointer transition-colors">
+                                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:border-blue-300 cursor-pointer transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="bg-blue-50 p-2.5 rounded-xl text-blue-600">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -312,8 +303,7 @@ function App() {
                   <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                 </div>
 
-                {/* Pill 2 */}
-                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:border-teal-300 cursor-pointer transition-colors">
+                                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:border-teal-300 cursor-pointer transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="bg-teal-50 p-2.5 rounded-xl text-teal-600">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -326,8 +316,7 @@ function App() {
                   <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                 </div>
 
-                {/* Prediction Bar */}
-                <div className="mt-8 pt-6 border-t border-gray-100">
+                                <div className="mt-8 pt-6 border-t border-gray-100">
                   <p className="text-sm font-bold text-gray-800 mb-4">Severity Output</p>
                   <div className="w-full bg-gray-100 rounded-full h-3 mb-3 overflow-hidden flex">
                     <div className="bg-green-400 h-full w-[15%]"></div>

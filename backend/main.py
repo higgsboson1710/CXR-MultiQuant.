@@ -8,7 +8,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
+# CORS Setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -17,23 +17,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Health Check
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the CXR-MultiQuant API. The server is running perfectly!"}
 
+# Prediction Route
 @app.post("/predict")
 async def predict_severity(
     image: UploadFile = File(...),
     report: str = Form(...)
 ):
-    """
-    Receives an X-Ray image and a radiology report from the frontend.
-    Returns a dummy prediction until the Kaggle model is finished!
-    """
     if not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File provided is not an image.")
 
-    # returning  a dummy prediction so the frontend can be built and tested immediately
     dummy_response = {
         "filename": image.filename,
         "report_received": report,
@@ -49,6 +46,6 @@ async def predict_severity(
     
     return dummy_response
 
+# Server Start
 if __name__ == "__main__":
-    # Start the server on port 8000
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
