@@ -253,6 +253,16 @@ function App() {
                       </select>
                     </div>
                   </div>
+
+                  {/* NLP Text Input */}
+                  <div className="mt-5">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Clinical Notes (Radiologist Report)</label>
+                    <textarea 
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium resize-none" 
+                      rows="3"
+                      placeholder="Paste radiologist findings here for NLP analysis..."
+                    ></textarea>
+                  </div>
                 </div>
 
                 {/* Image Upload */}
