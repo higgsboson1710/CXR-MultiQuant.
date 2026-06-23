@@ -1,66 +1,85 @@
 <div align="center">
   <h1>🩻 CXR-MultiQuant</h1>
-  <p><strong>State-of-the-Art Multimodal Deep Learning for Chest X-Ray Severity Quantification</strong></p>
+  <p><strong>Enterprise-Grade Multimodal Deep Learning for Chest X-Ray Severity Quantification</strong></p>
 </div>
 
 ---
 
 ## 🚀 Overview
 
-**CXR-MultiQuant** is a State-of-the-Art (SOTA) multimodal deep learning system designed to automate the quantification of disease severity from Chest X-Rays (CXRs). By simultaneously processing visual data (X-ray images) and clinical text (radiology reports), the system achieves expert-level diagnostic support. 
+**CXR-MultiQuant** is an enterprise-level, state-of-the-art (SOTA) multimodal deep learning system designed for modern clinical triage. It automates the quantification of disease severity from Chest X-Rays (CXRs) by simultaneously processing visual data (X-ray images) and clinical text (radiologist reports). 
 
-The architecture employs advanced **Co-Attention Fusion** to align spatial image features with semantic text features, providing a highly robust and interpretable prediction of disease severity (Mild, Moderate, Severe). 
+Coupled with a sleek, high-performance React frontend and a lightning-fast FastAPI backend, it provides doctors with instant, expert-level diagnostic support inside a realistic Hospital EHR (Electronic Health Record) ecosystem.
 
-## 🧠 Deep Learning Architecture (SOTA)
+## 🌐 Enterprise Full-Stack Architecture
 
-The core of CXR-MultiQuant is a custom-designed multimodal neural network optimized for medical vision-language tasks.
+CXR-MultiQuant is designed as a modern, decoupled web application. The frontend handles clinical data intake, the backend orchestrates the API traffic, and the deep learning core performs the heavy mathematical inference.
 
-*   **Image Encoder (DenseNet-121):** Pre-trained on ImageNet and fine-tuned for radiographic feature extraction. Extracts robust 256-dim spatial representations using Global Average Pooling.
-*   **Text Encoder (ClinicalBERT):** Pre-trained specifically on MIMIC clinical notes. Tokenizes and encodes "Findings" and "Impression" sections into 256-dim semantic embeddings.
-*   **Co-Attention Fusion:** A dual Multi-Head Attention mechanism (Image → Text and Text → Image). This allows the model to "focus" on specific regions of the X-ray based on the clinical notes, and vice versa.
-*   **Optimization:** Uses **Focal Loss** to explicitly handle severe class imbalance common in medical datasets, ensuring high sensitivity for rare, severe cases.
-
-### Architecture Flow
 ```mermaid
-flowchart LR
-    IMG[X-Ray Image] --> DENSE[DenseNet-121] --> PROJ_I[Image Proj]
-    TXT[Radiology Report] --> BERT[ClinicalBERT] --> PROJ_T[Text Proj]
-    
-    PROJ_I --> COATTN[Co-Attention Fusion]
-    PROJ_T --> COATTN
-    
-    COATTN --> CLF[Classification Head] --> OUT[Severity: Mild/Mod/Severe]
+flowchart TD
+    subgraph Frontend [Clinical Triage Dashboard - React.js + Vite]
+        UI[User Interface]
+        IN[Patient Intake & X-Ray Upload]
+        OUT[Severity Output Visualization]
+    end
+
+    subgraph Backend [API Gateway - FastAPI]
+        API[REST API Endpoints]
+        PRE[Data Preprocessing]
+    end
+
+    subgraph ML_Engine [AI Core - TensorFlow/Keras]
+        DENSE[DenseNet-121 Vision Encoder]
+        BERT[ClinicalBERT NLP Encoder]
+        FUSE[Co-Attention Fusion Head]
+    end
+
+    UI -->|HTTP POST| API
+    IN -->|Image + Clinical Text| API
+    API --> PRE
+    PRE --> DENSE
+    PRE --> BERT
+    DENSE --> FUSE
+    BERT --> FUSE
+    FUSE -->|Quantitative Risk Score| API
+    API -->|JSON Response| OUT
 ```
 
-For an in-depth breakdown of the layers, tensors, and data pipeline, please refer to the detailed [ARCHITECTURE.md](./ARCHITECTURE.md).
+## 🛠️ Technology Stack
 
-## 🛠️ Tech Stack
-
-CXR-MultiQuant is structured as a modern, scalable full-stack application.
-
-### 🔬 Deep Learning & AI
-*   **Framework:** TensorFlow / Keras
-*   **Vision Model:** DenseNet-121
-*   **NLP Model:** ClinicalBERT (Hugging Face)
-*   **Hyperparameter Tuning:** KerasTuner (Bayesian Optimization)
+### 💻 Frontend (Client Layer)
+*   **Framework:** React.js + Vite
+*   **Styling:** Tailwind CSS
+*   **Role:** A medical-grade, responsive EHR interface. Allows radiologists to drag-and-drop X-rays, paste clinical notes, and visualize the model's severity predictions in real-time.
 
 ### ⚙️ Backend (API Layer)
 *   **Framework:** FastAPI (Python)
-*   **Inference:** TensorFlow Serving / ONNX Runtime
-*   **Data Processing:** Pandas, NumPy, PIL
-*   **Role:** Exposes high-performance REST endpoints for the frontend to submit images/text and receive real-time severity predictions.
+*   **Server:** Uvicorn
+*   **Role:** Exposes high-performance REST endpoints (`/predict`). It receives `FormData` from the frontend, pre-processes images and text, invokes the Machine Learning model, and returns a JSON response.
 
-### 💻 Frontend (User Interface)
-*   **Framework:** React.js / Next.js *(In Development)*
-*   **Styling:** Tailwind CSS + Framer Motion
-*   **Role:** A sleek, medical-grade interface for radiologists to upload X-rays, paste clinical notes, and visualize the model's predictions and attention maps. 
+### 🔬 Deep Learning (AI Core)
+*   **Framework:** TensorFlow / Keras
+*   **Vision Model:** DenseNet-121 (Pre-trained on ImageNet)
+*   **NLP Model:** ClinicalBERT (Hugging Face)
+*   **Role:** Fuses spatial image features with semantic text features using **Co-Attention Fusion** to provide a robust prediction of disease severity (Mild, Moderate, Severe).
+
+## 🧠 Model Architecture (SOTA)
+
+The core of CXR-MultiQuant is a custom-designed multimodal neural network optimized for medical vision-language tasks.
+
+*   **Image Encoder:** Extracts robust 256-dim spatial representations using Global Average Pooling.
+*   **Text Encoder:** Tokenizes and encodes "Findings" and "Impression" sections into 256-dim semantic embeddings.
+*   **Co-Attention Fusion:** A dual Multi-Head Attention mechanism. This allows the model to "focus" on specific regions of the X-ray based on the clinical notes, and vice versa.
+*   **Optimization:** Uses **Focal Loss** to explicitly handle severe class imbalance common in medical datasets.
+
+For an in-depth breakdown of the neural network layers, tensors, and data pipeline, please refer to the detailed [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## 📂 Repository Structure
 
 ```text
 CXR-MultiQuant/
-├── backend/               # FastAPI server, inference scripts, routing
-├── frontend/              # Next.js/React web application (WIP)
+├── backend/               # FastAPI server, inference scripts, requirements.txt
+├── frontend/              # Vite + React.js web application
 ├── notebooks/             # Exploratory Data Analysis & Model Prototyping
 ├── ARCHITECTURE.md        # Detailed DL architecture specification
 ├── LICENSE                # MIT License
@@ -72,9 +91,8 @@ CXR-MultiQuant/
 ### Prerequisites
 *   Python 3.9+
 *   Node.js 18+ (for frontend)
-*   CUDA Toolkit (for GPU acceleration)
 
-### 1. Model & Backend Setup
+### 1. Backend Setup
 ```bash
 # Clone the repository
 git clone <your-repo-url>
@@ -88,12 +106,14 @@ source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install -r backend/requirements.txt
 
 # Run the FastAPI server
-uvicorn backend.main:app --reload --port 8000
+cd backend
+python main.py
 ```
 
-### 2. Frontend Setup (WIP)
+### 2. Frontend Setup
 ```bash
-cd frontend
+# Open a new terminal tab
+cd CXR-MultiQuant/frontend
 
 # Install dependencies
 npm install
