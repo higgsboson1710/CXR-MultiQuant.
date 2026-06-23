@@ -2,6 +2,9 @@ import { useState } from 'react'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [patientName, setPatientName] = useState("John Doe")
+  const [patientAge, setPatientAge] = useState("45")
+  const [patientGender, setPatientGender] = useState("M")
 
 
   if (!isLoggedIn) {
@@ -150,16 +153,16 @@ function App() {
               <div className="space-y-3">
                 <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 flex justify-between items-center">
                   <span className="text-sm text-gray-500 font-medium">Name</span>
-                  <span className="text-base font-bold text-gray-900">John Doe</span>
+                  <span className="text-base font-bold text-gray-900">{patientName || "—"}</span>
                 </div>
                 <div className="flex gap-3">
                   <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 flex-1 flex flex-col justify-center items-center">
                     <span className="text-xs text-gray-500 font-medium mb-1">Age</span>
-                    <span className="text-xl font-bold text-gray-900">45 <span className="text-xs font-normal text-gray-500">Yrs</span></span>
+                    <span className="text-xl font-bold text-gray-900">{patientAge || "—"} <span className="text-xs font-normal text-gray-500">Yrs</span></span>
                   </div>
                   <div className="bg-[#f0f7ff] p-4 rounded-2xl border border-blue-100/50 flex-1 flex flex-col justify-center items-center">
                     <span className="text-xs text-gray-500 font-medium mb-1">Gender</span>
-                    <span className="text-xl font-bold text-gray-900 text-blue-600">M</span>
+                    <span className="text-xl font-bold text-gray-900 text-blue-600">{patientGender || "—"}</span>
                   </div>
                 </div>
               </div>
@@ -219,10 +222,48 @@ function App() {
                 </div>
               </div>
               
-              <div className="flex-grow bg-[#f8fafc] flex items-center justify-center relative p-8 m-2 rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="flex-grow bg-[#f8fafc] flex flex-col items-center justify-center relative p-8 m-2 rounded-2xl border border-gray-100 overflow-hidden">
                 
+                {/* NEW: Patient Intake Form */}
+                <div className="w-full max-w-2xl bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8 z-10 relative">
+                  <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Patient Intake Form</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
+                      <input 
+                        type="text" 
+                        value={patientName}
+                        onChange={(e) => setPatientName(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                        placeholder="e.g. John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Age</label>
+                      <input 
+                        type="number" 
+                        value={patientAge}
+                        onChange={(e) => setPatientAge(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                        placeholder="e.g. 45"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
+                      <select 
+                        value={patientGender}
+                        onChange={(e) => setPatientGender(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium appearance-none">
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Image Placeholder - Awaiting User Upload */}
-                <div className="w-full h-full flex flex-col items-center justify-center text-center max-w-lg z-10 relative">
+                <div className="w-full flex flex-col items-center justify-center text-center max-w-lg z-10 relative">
                   <div className="bg-white p-12 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm w-full hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer">
                     <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
