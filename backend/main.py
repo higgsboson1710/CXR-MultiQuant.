@@ -78,13 +78,12 @@ async def predict_severity(
         raise HTTPException(status_code=400, detail="File provided is not an image.")
 
     try:
-        # --- 1. IMAGE PREPROCESSING ---
-        # Read the image, resize to 224x224, and convert to numpy array
+   
         image_bytes = await image.read()
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
         img = img.resize((224, 224))
         
-        # Convert to float32 and normalize [0, 1] exactly as the model was trained
+
         img_array = np.array(img, dtype=np.float32) / 255.0 
         img_tensor = np.expand_dims(img_array, axis=0) # Shape: (1, 224, 224, 3)
 
@@ -131,6 +130,6 @@ async def predict_severity(
         print(f"❌ Error during inference: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Server Start
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
