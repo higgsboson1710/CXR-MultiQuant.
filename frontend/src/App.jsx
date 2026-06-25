@@ -1,5 +1,42 @@
 import { useState } from 'react'
 
+const MOCK_PATIENTS = [
+  {
+    id: "JD",
+    name: "John Doe",
+    age: "45",
+    gender: "M",
+    reason: "Suspected Pneumonia",
+    history: [
+      { date: "Oct 2025", event: "Routine Checkup", notes: "Patient reported mild cough. Prescribed rest." },
+      { date: "Jan 2026", event: "Follow-up", notes: "Cough persisted. Ordered preliminary blood tests." }
+    ]
+  },
+  {
+    id: "AS",
+    name: "Alice Smith",
+    age: "32",
+    gender: "F",
+    reason: "Routine Scan",
+    history: [
+      { date: "Mar 2024", event: "Annual Physical", notes: "All vitals normal." },
+      { date: "Dec 2025", event: "Vaccination", notes: "Administered flu shot." }
+    ]
+  },
+  {
+    id: "RJ",
+    name: "Robert Jones",
+    age: "58",
+    gender: "M",
+    reason: "Effusion Checkup",
+    history: [
+      { date: "Nov 2023", event: "Cardiac Evaluation", notes: "Mild palpitations. ECG normal." },
+      { date: "May 2025", event: "Pulmonary Scan", notes: "Detected minor fluid buildup. Monitoring." }
+    ]
+  }
+];
+
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [patientName, setPatientName] = useState("John Doe")
@@ -10,6 +47,19 @@ function App() {
   const [imagePreview, setImagePreview] = useState(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [prediction, setPrediction] = useState(null)
+  const [activeTab, setActiveTab] = useState("scan")
+  const [activePatientId, setActivePatientId] = useState("JD")
+
+  const handlePatientClick = (patient) => {
+    setActivePatientId(patient.id);
+    setPatientName(patient.name);
+    setPatientAge(patient.age);
+    setPatientGender(patient.gender);
+    setClinicalText("");
+    setSelectedImage(null);
+    setImagePreview(null);
+    setPrediction(null);
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -208,37 +258,27 @@ function App() {
             <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
               <h3 className="text-gray-900 font-bold mb-4 text-lg">Scan Queue</h3>
               <div className="space-y-3">
-                <div className="bg-blue-600 p-4 rounded-2xl cursor-pointer text-white shadow-lg shadow-blue-600/30">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold">JD</div>
-                    <div>
-                      <p className="font-semibold text-sm">John Doe</p>
-                      <p className="text-blue-100 text-xs mt-0.5">Suspected Pneumonia</p>
+                {MOCK_PATIENTS.map((p) => {
+                  const isActive = p.id === activePatientId;
+                  return (
+                    <div 
+                      key={p.id}
+                      onClick={() => handlePatientClick(p)}
+                      className={`${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'bg-white border border-gray-100 hover:border-gray-300 hover:bg-gray-50'} p-4 rounded-2xl cursor-pointer transition-all flex items-center justify-between`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isActive ? 'bg-white/20' : 'bg-gray-100 text-gray-500'}`}>
+                          {p.id}
+                        </div>
+                        <div>
+                          <p className={`font-semibold text-sm ${isActive ? '' : 'text-gray-800'}`}>{p.name}</p>
+                          <p className={`text-xs mt-0.5 ${isActive ? 'text-blue-100' : 'text-gray-500'}`}>{p.reason}</p>
+                        </div>
+                      </div>
+                      {!isActive && <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>}
                     </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">AS</div>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-800">Alice Smith</p>
-                      <p className="text-gray-500 text-xs mt-0.5">Routine Scan</p>
-                    </div>
-                  </div>
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
-                </div>
-
-                <div className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center font-bold">RJ</div>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-800">Robert Jones</p>
-                      <p className="text-gray-500 text-xs mt-0.5">Effusion Checkup</p>
-                    </div>
-                  </div>
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
-                </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -249,108 +289,181 @@ function App() {
             <div className="bg-white rounded-3xl shadow-[0_4px_25px_-5px_rgba(6,81,237,0.08)] border border-gray-100 h-full overflow-hidden flex flex-col relative">
               <div className="p-5 flex justify-between items-center bg-white z-10">
                 <div className="flex gap-2">
-                  <button className="px-4 py-1.5 bg-blue-600 text-white rounded-full text-sm font-medium shadow-sm">X-Ray Scan</button>
-                  <button className="px-4 py-1.5 text-gray-500 hover:text-gray-900 rounded-full text-sm font-medium transition-colors">AI Report</button>
-                  <button className="px-4 py-1.5 text-gray-500 hover:text-gray-900 rounded-full text-sm font-medium transition-colors">Patient History</button>
+                  <button onClick={() => setActiveTab('scan')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${activeTab === 'scan' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>X-Ray Scan</button>
+                  <button onClick={() => setActiveTab('report')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${activeTab === 'report' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>AI Report</button>
+                  <button onClick={() => setActiveTab('history')} className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${activeTab === 'history' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}>Patient History</button>
                 </div>
                 <div className="flex gap-2">
                   <button className="p-2 bg-gray-50 text-gray-600 rounded-full hover:bg-gray-100 transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg></button>
                 </div>
               </div>
               
-              <div className="flex-grow bg-[#f8fafc] flex flex-col items-center justify-center relative p-8 m-2 rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="flex-grow bg-[#f8fafc] flex flex-col items-center justify-center relative p-8 m-2 rounded-2xl border border-gray-100 overflow-hidden overflow-y-auto">
                 
-                {/* Intake Form */}
-                <div className="w-full max-w-2xl bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8 z-10 relative">
-                  <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Patient Intake Form</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
-                      <input 
-                        type="text" 
-                        value={patientName}
-                        onChange={(e) => setPatientName(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
-                        placeholder="e.g. John Doe"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Age</label>
-                      <input 
-                        type="number" 
-                        value={patientAge}
-                        onChange={(e) => setPatientAge(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
-                        placeholder="e.g. 45"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
-                      <select 
-                        value={patientGender}
-                        onChange={(e) => setPatientGender(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium appearance-none">
-                        <option value="M">Male</option>
-                        <option value="F">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                  </div>
+                {activeTab === 'scan' && (
+                  <>
+                    {/* Intake Form */}
+                    <div className="w-full max-w-2xl bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8 z-10 relative">
+                      <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Patient Intake Form</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Full Name</label>
+                          <input 
+                            type="text" 
+                            value={patientName}
+                            onChange={(e) => setPatientName(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                            placeholder="e.g. John Doe"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Age</label>
+                          <input 
+                            type="number" 
+                            value={patientAge}
+                            onChange={(e) => setPatientAge(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium" 
+                            placeholder="e.g. 45"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
+                          <select 
+                            value={patientGender}
+                            onChange={(e) => setPatientGender(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium appearance-none">
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                      </div>
 
-                  {/* NLP Text Input */}
-                  <div className="mt-5">
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Clinical Notes (Radiologist Report)</label>
-                    <textarea 
-                      value={clinicalText}
-                      onChange={(e) => setClinicalText(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium resize-none" 
-                      rows="3"
-                      placeholder="Paste radiologist findings here for NLP analysis..."
-                    ></textarea>
-                  </div>
-                </div>
+                      {/* NLP Text Input */}
+                      <div className="mt-5">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Clinical Notes (Radiologist Report)</label>
+                        <textarea 
+                          value={clinicalText}
+                          onChange={(e) => setClinicalText(e.target.value)}
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm font-medium resize-none" 
+                          rows="3"
+                          placeholder="Paste radiologist findings here for NLP analysis..."
+                        ></textarea>
+                      </div>
+                    </div>
 
-                {/* Image Upload */}
-                <div className="w-full flex flex-col items-center justify-center text-center max-w-lg z-10 relative">
-                  <label className="bg-white p-12 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm w-full hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer relative overflow-hidden group">
-                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    {/* Image Upload */}
+                    <div className="w-full flex flex-col items-center justify-center text-center max-w-lg z-10 relative">
+                      <label className="bg-white p-12 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm w-full hover:border-blue-400 hover:bg-blue-50/50 transition-all cursor-pointer relative overflow-hidden group">
+                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                        
+                        {imagePreview ? (
+                          <div className="absolute inset-0 w-full h-full p-2">
+                            <img src={imagePreview} alt="X-Ray Preview" className="w-full h-full object-contain rounded-2xl" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
+                              <p className="text-white font-bold">Click to change image</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">Upload Chest X-Ray</h3>
+                            <p className="text-gray-500 max-w-xs mx-auto text-sm">Click to select your radiology image here to run analysis.</p>
+                          </>
+                        )}
+                      </label>
+                    </div>
+
+                    <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 max-w-xs z-20">
+                      <div className="flex items-center gap-2 mb-2">
+                        {isAnalyzing ? (
+                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-ping"></div>
+                        ) : prediction ? (
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                        ) : (
+                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                        )}
+                        <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                          {isAnalyzing ? "Analyzing..." : prediction ? "Scan Complete" : "Awaiting Scan"}
+                        </p>
+                      </div>
+                      <p className="text-gray-500 text-sm flex items-center justify-between">
+                        Severity Assessment <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {activeTab === 'report' && (
+                  <div className="w-full max-w-3xl bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                    <div className="border-b border-gray-200 pb-4 mb-6 flex justify-between items-end">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">AI Diagnostic Report</h2>
+                        <p className="text-gray-500 text-sm mt-1">Generated by CXR-MultiQuant Engine</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900">Date: {new Date().toLocaleDateString()}</p>
+                        <p className="text-sm text-gray-500">Patient: {patientName}</p>
+                      </div>
+                    </div>
                     
-                    {imagePreview ? (
-                      <div className="absolute inset-0 w-full h-full p-2">
-                        <img src={imagePreview} alt="X-Ray Preview" className="w-full h-full object-contain rounded-2xl" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl">
-                          <p className="text-white font-bold">Click to change image</p>
+                    {prediction ? (
+                      <div className="space-y-6">
+                        <div className={`p-4 rounded-xl border ${prediction.severity === 'Severe' ? 'bg-red-50 border-red-200' : prediction.severity === 'Moderate' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+                          <h3 className={`text-sm font-bold uppercase tracking-wider mb-2 ${prediction.severity === 'Severe' ? 'text-red-800' : prediction.severity === 'Moderate' ? 'text-blue-800' : 'text-green-800'}`}>Primary Finding</h3>
+                          <p className="text-lg font-medium text-gray-900">
+                            The multimodal model has assessed this scan as <span className="font-bold">{prediction.severity}</span> with a confidence of {Math.round(prediction.probabilities[prediction.severity] * 100)}%.
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-1">Radiologist Input Provided</h4>
+                          <p className="text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100 italic">
+                            "{clinicalText || "No clinical notes provided."}"
+                          </p>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-bold text-gray-700 mb-2 border-b border-gray-100 pb-1">Model Synthesis</h4>
+                          <p className="text-gray-600">
+                            The DenseNet Vision model analyzed the pixel densities of the provided radiograph, while the ClinicalBERT language model parsed the associated clinical notes. 
+                            The co-attention layer fused these representations, leading to the final classification of {prediction.severity}. 
+                            Clinical correlation is required.
+                          </p>
                         </div>
                       </div>
                     ) : (
-                      <>
-                        <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">Upload Chest X-Ray</h3>
-                        <p className="text-gray-500 max-w-xs mx-auto text-sm">Click to select your radiology image here to run analysis.</p>
-                      </>
+                      <div className="py-12 flex flex-col items-center justify-center text-gray-400">
+                        <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p className="text-lg font-medium text-gray-600">No report generated yet.</p>
+                        <p className="text-sm">Upload an image and run the analysis to generate a report.</p>
+                      </div>
                     )}
-                  </label>
-                </div>
-
-                                <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-100 max-w-xs z-20">
-                  <div className="flex items-center gap-2 mb-2">
-                    {isAnalyzing ? (
-                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-ping"></div>
-                    ) : prediction ? (
-                      <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
-                    ) : (
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-                    )}
-                    <p className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-                      {isAnalyzing ? "Analyzing..." : prediction ? "Scan Complete" : "Awaiting Scan"}
-                    </p>
                   </div>
-                  <p className="text-gray-500 text-sm flex items-center justify-between">
-                    Severity Assessment <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                  </p>
-                </div>
+                )}
+
+                {activeTab === 'history' && (
+                  <div className="w-full max-w-3xl bg-white p-8 rounded-2xl shadow-sm border border-gray-200 h-full overflow-y-auto">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Patient Medical History</h2>
+                    <div className="relative border-l-2 border-blue-100 ml-4 space-y-8 pb-8">
+                      {MOCK_PATIENTS.find(p => p.id === activePatientId)?.history.map((record, idx) => (
+                        <div key={idx} className="relative pl-6">
+                          <div className="absolute w-4 h-4 bg-blue-600 rounded-full -left-[9px] top-1 border-4 border-white shadow-sm"></div>
+                          <p className="text-sm font-bold text-blue-600 mb-1">{record.date}</p>
+                          <h4 className="text-lg font-bold text-gray-900">{record.event}</h4>
+                          <p className="text-gray-600 mt-2 bg-gray-50 p-4 rounded-xl border border-gray-100">{record.notes}</p>
+                        </div>
+                      ))}
+                      <div className="relative pl-6 opacity-50">
+                        <div className="absolute w-4 h-4 bg-gray-300 rounded-full -left-[9px] top-1 border-4 border-white shadow-sm"></div>
+                        <p className="text-sm font-bold text-gray-400 mb-1">Prior to 2023</p>
+                        <h4 className="text-lg font-bold text-gray-500">No records available</h4>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
