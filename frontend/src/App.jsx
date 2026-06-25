@@ -404,7 +404,10 @@ function App() {
                       </div>
                       <div className="flex justify-between text-xs font-medium">
                         <span className="text-gray-400">Mild ({Math.round(prediction.probabilities.Mild * 100)}%)</span>
-                        <span className="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">{prediction.severity}</span>
+                        <span className="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded">
+                          Moderate ({Math.round(prediction.probabilities.Moderate * 100)}%) 
+                          <span className="text-blue-800 ml-2">Result: {prediction.severity}</span>
+                        </span>
                         <span className="text-gray-400">Severe ({Math.round(prediction.probabilities.Severe * 100)}%)</span>
                       </div>
                     </>

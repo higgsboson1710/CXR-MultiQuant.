@@ -1,12 +1,18 @@
 import os
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
 import io
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, TFBertModel, TFAutoModel
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import keras
+
+# Global Fix for Transformers loading PyTorch weights in Keras 3
+if not hasattr(keras.backend, 'set_value'):
+    keras.backend.set_value = lambda x, y: x.assign(y) if hasattr(x, 'assign') else None
 
 # Global AI Variables
 model = None
@@ -53,6 +59,67 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to the CXR-MultiQuant API. The server is running perfectly!"}
 
+def create_image_encoder():
+    image_input = tf.keras.Input(shape=(224, 224, 3), name="image_input")
+    x = tf.keras.layers.RandomRotation(0.1)(image_input)
+    x = tf.keras.layers.RandomZoom(0.1)(x)
+    densenet = tf.keras.applications.DenseNet121(include_top=False, weights="imagenet", input_tensor=x)
+    densenet.trainable = False
+    x = densenet.output
+    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    img_features = tf.keras.layers.Dense(256, activation='relu', name="img_projection")(x)
+    return tf.keras.Model(inputs=image_input, outputs=img_features, name="Image_Encoder")
+
+def create_text_encoder():
+    input_ids = tf.keras.Input(shape=(MAX_LEN,), dtype=tf.int32, name="input_ids")
+    attention_mask = tf.keras.Input(shape=(MAX_LEN,), dtype=tf.int32, name="attention_mask")
+
+    import tensorflow.keras.backend as K
+    if not hasattr(K, 'set_value'):
+        K.set_value = lambda x, y: x.assign(y) if hasattr(x, 'assign') else None
+
+    clinical_bert = TFAutoModel.from_pretrained("emilyalsentzer/Bio_ClinicalBERT", from_pt=True)
+    clinical_bert.trainable = False
+    bert_output = clinical_bert(input_ids, attention_mask=attention_mask)
+    cls_token = bert_output.last_hidden_state[:, 0, :]
+    txt_features = tf.keras.layers.Dense(256, activation='relu', name="txt_projection")(cls_token)
+    return tf.keras.Model(inputs=[input_ids, attention_mask], outputs=txt_features, name="Text_Encoder")
+
+def build_final_model():
+    image_input = tf.keras.Input(shape=(224, 224, 3), name="image_input")
+    input_ids = tf.keras.Input(shape=(MAX_LEN,), dtype=tf.int32, name="input_ids")
+    attention_mask = tf.keras.Input(shape=(MAX_LEN,), dtype=tf.int32, name="attention_mask")
+
+    image_encoder = create_image_encoder()
+    text_encoder = create_text_encoder()
+
+    img_feats = image_encoder(image_input)
+    txt_feats = text_encoder([input_ids, attention_mask])
+
+    img_feats_seq = tf.expand_dims(img_feats, axis=1)
+    txt_feats_seq = tf.expand_dims(txt_feats, axis=1)
+
+    attn_img_txt = tf.keras.layers.MultiHeadAttention(num_heads=8, key_dim=32)(query=img_feats_seq, value=txt_feats_seq, key=txt_feats_seq)
+    norm1 = tf.keras.layers.LayerNormalization()(img_feats_seq + attn_img_txt)
+
+    attn_txt_img = tf.keras.layers.MultiHeadAttention(num_heads=8, key_dim=32)(query=txt_feats_seq, value=img_feats_seq, key=img_feats_seq)
+    norm2 = tf.keras.layers.LayerNormalization()(txt_feats_seq + attn_txt_img)
+
+    norm1_flat = tf.squeeze(norm1, axis=1)
+    norm2_flat = tf.squeeze(norm2, axis=1)
+    fused = tf.keras.layers.Concatenate()([norm1_flat, norm2_flat])
+
+    x = tf.keras.layers.Dense(256, activation='relu')(fused)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dropout(0.3)(x)
+
+    x = tf.keras.layers.Dense(128, activation='relu')(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
+
+    output = tf.keras.layers.Dense(3, activation='softmax')(x)
+    return tf.keras.Model(inputs=[image_input, input_ids, attention_mask], outputs=output)
+
 # --- STEP 1: LOAD AI MODELS ON STARTUP ---
 @app.on_event("startup")
 async def load_ai_models():
@@ -61,10 +128,10 @@ async def load_ai_models():
     print("1/2: Loading ClinicalBERT Tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
     
-    print("2/2: Loading DenseNet Multimodal Neural Network (.h5)...")
-    # Load the model with our custom loss function
+    print("2/2: Building Architecture and Loading Weights (.h5)...")
+    model = build_final_model()
     model_path = os.path.join(os.path.dirname(__file__), "best_cxr_model_final.h5")
-    model = tf.keras.models.load_model(model_path, custom_objects={'CategoricalFocalLoss': CategoricalFocalLoss})
+    model.load_weights(model_path, by_name=True)
     
     print("✅ AI Models Loaded Successfully in Memory!")
 
