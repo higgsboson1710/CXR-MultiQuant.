@@ -104,7 +104,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex">
         {/* Login Page */}
-        <div className="w-1/2 relative flex items-center justify-center overflow-hidden">
+        <div className="w-1/2 relative flex items-end justify-center pb-32 overflow-hidden">
           {}
           <img 
             src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=2000&auto=format&fit=crop" 
