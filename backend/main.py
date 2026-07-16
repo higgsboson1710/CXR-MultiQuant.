@@ -138,15 +138,14 @@ async def load_ai_models():
     
     db = SessionLocal()
     try:
-        admin_user = db.query(User).filter(User.email == "admin@hospital.org").first()
+        admin_user = db.query(User).filter(User.username == "admin@hospital.org").first()
         if not admin_user:
             print("Creating default admin account...")
-            hashed_pw = get_password_hash("admin123")
+            hashed_pw = get_password_hash("securepassword123")
             new_admin = User(
-                email="admin@hospital.org",
-                password_hash=hashed_pw,
-                first_name="Admin",
-                last_name="Doctor"
+                username="admin@hospital.org",
+                hashed_password=hashed_pw,
+                role="admin"
             )
             db.add(new_admin)
             db.commit()
