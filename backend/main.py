@@ -96,18 +96,7 @@ def build_final_model():
     img_feats = image_encoder(image_input)
     txt_feats = text_encoder([input_ids, attention_mask])
 
-    img_feats_seq = tf.expand_dims(img_feats, axis=1)
-    txt_feats_seq = tf.expand_dims(txt_feats, axis=1)
-
-    attn_img_txt = tf.keras.layers.MultiHeadAttention(num_heads=8, key_dim=32)(query=img_feats_seq, value=txt_feats_seq, key=txt_feats_seq)
-    norm1 = tf.keras.layers.LayerNormalization()(img_feats_seq + attn_img_txt)
-
-    attn_txt_img = tf.keras.layers.MultiHeadAttention(num_heads=8, key_dim=32)(query=txt_feats_seq, value=img_feats_seq, key=img_feats_seq)
-    norm2 = tf.keras.layers.LayerNormalization()(txt_feats_seq + attn_txt_img)
-
-    norm1_flat = tf.squeeze(norm1, axis=1)
-    norm2_flat = tf.squeeze(norm2, axis=1)
-    fused = tf.keras.layers.Concatenate()([norm1_flat, norm2_flat])
+    fused = tf.keras.layers.Concatenate()([img_feats, txt_feats])
 
     x = tf.keras.layers.Dense(256, activation='relu')(fused)
     x = tf.keras.layers.BatchNormalization()(x)
@@ -151,8 +140,9 @@ async def predict_severity(
         img = img.resize((224, 224))
         
 
-        img_array = np.array(img, dtype=np.float32) / 255.0 
-        img_tensor = np.expand_dims(img_array, axis=0) # Shape: (1, 224, 224, 3)
+        img_array = np.array(img, dtype=np.float32)
+        img_tensor = tf.keras.applications.densenet.preprocess_input(img_array)
+        img_tensor = np.expand_dims(img_tensor, axis=0) # Shape: (1, 224, 224, 3)
 
         # --- 2. NLP PREPROCESSING ---
         # Tokenize the radiologist report using ClinicalBERT
