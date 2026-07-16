@@ -47,11 +47,3 @@ def register(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Dep
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post("/login/guest", response_model=schemas.Token)
-def login_guest():
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    # Generate a temporary guest token
-    access_token = create_access_token(
-        data={"sub": "guest", "role": "guest"}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
