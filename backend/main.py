@@ -5,11 +5,12 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 from transformers import AutoTokenizer, TFBertModel, TFAutoModel
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import keras
-from routers import auth
+import time
+from routers import auth, dashboard
 
 # Global Fix for Transformers loading PyTorch weights in Keras 3
 if not hasattr(keras.backend, 'set_value'):
@@ -55,7 +56,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def log_request_latency(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    # Add a custom header to log latency
+    response.headers["X-Process-Time"] = str(process_time)
+    print(f"[{request.method}] {request.url.path} - Latency: {process_time:.4f}s")
+    return response
+
 app.include_router(auth.router)
+app.include_router(dashboard.router)
 
 # Health Check
 @app.get("/")
