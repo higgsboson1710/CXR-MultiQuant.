@@ -9,6 +9,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import keras
+from routers import auth
 
 # Global Fix for Transformers loading PyTorch weights in Keras 3
 if not hasattr(keras.backend, 'set_value'):
@@ -53,6 +54,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router)
 
 # Health Check
 @app.get("/")
