@@ -43,6 +43,7 @@ function App() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [loginError, setLoginError] = useState("")
+  const [isSignUpMode, setIsSignUpMode] = useState(false)
   
   const [patientName, setPatientName] = useState("John Doe")
   const [patientAge, setPatientAge] = useState("45")
@@ -103,6 +104,33 @@ function App() {
         fetchDashboardData(data.access_token);
       } else {
         setLoginError("Invalid email or password");
+      }
+    } catch (error) {
+      setLoginError("Failed to connect to backend");
+    }
+  };
+
+  const handleSignUp = async () => {
+    try {
+      setLoginError("");
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+      formData.append("password", password);
+
+      const response = await fetch(`${apiUrl}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setToken(data.access_token);
+        setIsLoggedIn(true);
+        fetchDashboardData(data.access_token);
+      } else {
+        const errData = await response.json();
+        setLoginError(errData.detail || "Failed to register");
       }
     } catch (error) {
       setLoginError("Failed to connect to backend");
@@ -197,14 +225,16 @@ function App() {
           </div>
 
           <div className="max-w-md w-full">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-            <p className="text-gray-500 mb-4">Sign in to access your unified clinical inbox</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">{isSignUpMode ? "Create an Account" : "Welcome Back"}</h2>
+            <p className="text-gray-500 mb-4">{isSignUpMode ? "Sign up to start analyzing chest X-rays" : "Sign in to access your unified clinical inbox"}</p>
             
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 text-sm">
-              <p className="font-bold text-blue-900 mb-1">Demo Credentials:</p>
-              <p className="text-blue-800"><strong>Email:</strong> admin@hospital.org</p>
-              <p className="text-blue-800"><strong>Password:</strong> securepassword123</p>
-            </div>
+            {!isSignUpMode && (
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 text-sm">
+                <p className="font-bold text-blue-900 mb-1">Demo Credentials:</p>
+                <p className="text-blue-800"><strong>Email:</strong> admin@hospital.org</p>
+                <p className="text-blue-800"><strong>Password:</strong> securepassword123</p>
+              </div>
+            )}
             
             <div className="space-y-6">
               <div>
@@ -253,10 +283,21 @@ function App() {
               {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
               
               <button 
-                onClick={handleLogin}
+                onClick={isSignUpMode ? handleSignUp : handleLogin}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg mt-4">
-                Secure Sign In
+                {isSignUpMode ? "Create Account" : "Secure Sign In"}
               </button>
+
+              <div className="text-center mt-4">
+                <button 
+                  onClick={() => {
+                    setIsSignUpMode(!isSignUpMode);
+                    setLoginError("");
+                  }}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
+                  {isSignUpMode ? "Already have an account? Log In" : "Don't have an account? Sign Up"}
+                </button>
+              </div>
 
                             <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-gray-200"></div>
