@@ -39,6 +39,11 @@ const MOCK_PATIENTS = [
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [token, setToken] = useState(null)
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [loginError, setLoginError] = useState("")
+  
   const [patientName, setPatientName] = useState("John Doe")
   const [patientAge, setPatientAge] = useState("45")
   const [patientGender, setPatientGender] = useState("M")
@@ -49,6 +54,60 @@ function App() {
   const [prediction, setPrediction] = useState(null)
   const [activeTab, setActiveTab] = useState("scan")
   const [activePatientId, setActivePatientId] = useState("JD")
+  const [realPatients, setRealPatients] = useState([])
+
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+  const fetchDashboardData = async (authToken) => {
+    try {
+      const response = await fetch(`${apiUrl}/dashboard/`, {
+        headers: { "Authorization": `Bearer ${authToken}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Transform the backend DashboardData objects into the frontend patient format
+        const formatted = data.map(item => ({
+          id: `DB-${item.id}`,
+          name: item.patient_name || "Unknown Patient",
+          age: item.patient_age ? String(item.patient_age) : "N/A",
+          gender: item.patient_gender || "U",
+          reason: `Severity: ${item.severity}`,
+          history: [
+            { date: new Date(item.created_at).toLocaleDateString(), event: "AI Scan", notes: item.clinical_notes || "No notes." }
+          ]
+        }));
+        setRealPatients(formatted);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard:", error);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      setLoginError("");
+      const formData = new URLSearchParams();
+      formData.append("username", username);
+      formData.append("password", password);
+
+      const response = await fetch(`${apiUrl}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setToken(data.access_token);
+        setIsLoggedIn(true);
+        fetchDashboardData(data.access_token);
+      } else {
+        setLoginError("Invalid email or password");
+      }
+    } catch (error) {
+      setLoginError("Failed to connect to backend");
+    }
+  };
 
   const handlePatientClick = (patient) => {
     setActivePatientId(patient.id);
@@ -82,15 +141,23 @@ function App() {
       const formData = new FormData();
       formData.append("image", selectedImage);
       formData.append("report", clinicalText || "No clinical notes provided.");
+      formData.append("patient_name", patientName);
+      formData.append("patient_age", patientAge);
+      formData.append("patient_gender", patientGender);
       
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
       const response = await fetch(`${apiUrl}/predict`, {
         method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
         body: formData,
       });
       
       const data = await response.json();
       setPrediction(data.prediction);
+      
+      // Refresh the queue to show the newly saved patient
+      fetchDashboardData(token);
       
     } catch (error) {
       console.error("Error analyzing image:", error);
@@ -131,7 +198,13 @@ function App() {
 
           <div className="max-w-md w-full">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-            <p className="text-gray-500 mb-8">Sign in to access your unified clinical inbox</p>
+            <p className="text-gray-500 mb-4">Sign in to access your unified clinical inbox</p>
+            
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 text-sm">
+              <p className="font-bold text-blue-900 mb-1">Demo Credentials:</p>
+              <p className="text-blue-800"><strong>Email:</strong> admin@hospital.org</p>
+              <p className="text-blue-800"><strong>Password:</strong> securepassword123</p>
+            </div>
             
             <div className="space-y-6">
               <div>
@@ -142,7 +215,13 @@ function App() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                     </svg>
                   </div>
-                  <input type="text" className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="doctor@hospital.org" />
+                  <input 
+                    type="text" 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" 
+                    placeholder="doctor@hospital.org" 
+                  />
                 </div>
               </div>
               
@@ -154,7 +233,13 @@ function App() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
-                  <input type="password" className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" placeholder="••••••••" />
+                  <input 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all" 
+                    placeholder="••••••••" 
+                  />
                 </div>
               </div>
 
@@ -165,8 +250,10 @@ function App() {
                 </label>
               </div>
               
+              {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
+              
               <button 
-                onClick={() => setIsLoggedIn(true)}
+                onClick={handleLogin}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg mt-4">
                 Secure Sign In
               </button>
@@ -258,8 +345,8 @@ function App() {
             {/* Scan Queue */}
             <div className="bg-white rounded-3xl p-6 shadow-[0_4px_20px_-4px_rgba(6,81,237,0.08)] border border-gray-100">
               <h3 className="text-gray-900 font-bold mb-4 text-lg">Scan Queue</h3>
-              <div className="space-y-3">
-                {MOCK_PATIENTS.map((p) => {
+              <div className="space-y-3 h-[400px] overflow-y-auto pr-2">
+                {[...realPatients, ...MOCK_PATIENTS].map((p) => {
                   const isActive = p.id === activePatientId;
                   return (
                     <div 
@@ -449,7 +536,7 @@ function App() {
                   <div className="w-full max-w-3xl bg-white p-8 rounded-2xl shadow-sm border border-gray-200 h-full overflow-y-auto">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Patient Medical History</h2>
                     <div className="relative border-l-2 border-blue-100 ml-4 space-y-8 pb-8">
-                      {MOCK_PATIENTS.find(p => p.id === activePatientId)?.history.map((record, idx) => (
+                      {[...realPatients, ...MOCK_PATIENTS].find(p => p.id === activePatientId)?.history.map((record, idx) => (
                         <div key={idx} className="relative pl-6">
                           <div className="absolute w-4 h-4 bg-blue-600 rounded-full -left-[9px] top-1 border-4 border-white shadow-sm"></div>
                           <p className="text-sm font-bold text-blue-600 mb-1">{record.date}</p>
