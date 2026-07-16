@@ -7,145 +7,112 @@ sdk: docker
 pinned: false
 ---
 
-<div align="center">
-  <h1>🫁 CXR-MultiQuant: Multimodal AI for Clinical Triage</h1>
-  <p><strong>A Full-Stack Multimodal Deep Learning Application for Accelerated Radiology Triage</strong></p>
+# 🫁 CXR-MultiQuant
 
-  [![Live Demo](https://img.shields.io/badge/Live%20Demo-CXR--MultiQuant-blue?style=for-the-badge&logo=vercel)](https://cxr-multi-quant.vercel.app/)
-  [![Hugging Face](https://img.shields.io/badge/AI%20Backend-Hugging%20Face-yellow?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/higgsboson1710/cxr-multiquant-backend)
-</div>
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-CXR--MultiQuant-blue?style=for-the-badge&logo=vercel)](https://cxr-multi-quant.vercel.app/)
+[![Hugging Face](https://img.shields.io/badge/AI%20Backend-Hugging%20Face-yellow?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/higgsboson1710/cxr-multiquant-backend)
 
----
+**CXR-MultiQuant** is a full-stack, multimodal medical AI application built to assist radiologists with rapid triage. By fusing computer vision and NLP, it predicts the severity of patient conditions based on Chest X-Rays and clinical notes.
 
-## 📖 Overview
-
-**CXR-MultiQuant** is an advanced AI clinical decision support system designed to assist radiologists in rapidly triaging patients. It achieves this by fusing computer vision (analyzing Chest X-Rays) with Natural Language Processing (reading unstructured radiologist notes) to generate a unified severity prediction: **Mild, Moderate, or Severe**.
-
-By combining both visual anomalies (e.g., opacities, consolidations) and semantic clinical context (e.g., patient history, nuanced findings), CXR-MultiQuant drastically reduces false positives and provides a holistic patient risk assessment.
+*For detailed information strictly regarding the Machine Learning models (DenseNet, ClinicalBERT, Focal Loss, etc.), please see [ARCHITECTURE.md](./ARCHITECTURE.md).*
 
 ---
 
-## 🧠 Multimodal ML Architecture
+## 🏗️ System Architecture
 
-Unlike standard single-modality clinical AIs, CXR-MultiQuant processes two independent data streams simultaneously using a **Co-Attention Fusion** mechanism.
+This project is engineered using a highly decoupled, modern microservice-style architecture to ensure scalable and secure inference.
 
 ```mermaid
-flowchart TB
-    subgraph INPUTS["📥 Clinical Inputs"]
-        direction LR
-        IMG["🩻 Chest X-Ray Image\n(224 × 224 × 3)"]
-        TXT["📄 Radiology Report\n(Findings + Impression)"]
+flowchart TD
+    User(["Doctor / Radiologist"])
+    
+    subgraph Frontend["Frontend Deployment (Vercel)"]
+        React["React + Vite UI"]
     end
 
-    subgraph IMAGE_ENCODER["🟢 Vision Pathway (DenseNet-121)"]
-        direction TB
-        RESIZE["Resize & Normalize"]
-        DENSE["DenseNet-121\n(Pre-trained on ImageNet)"]
-        GAP["Global Average Pooling"]
-        PROJ_IMG["Dense Projection\n→ 256-dim"]
-        RESIZE --> DENSE --> GAP --> PROJ_IMG
+    subgraph Backend["AI Backend (Hugging Face Spaces Docker)"]
+        FastAPI["FastAPI / Uvicorn\n(RESTful API & JWT Auth)"]
+        Celery["Celery Workers"]
+        Redis["Redis\n(Message Broker)"]
+        ML["AI Inference Engine\n(Multimodal)"]
+        
+        FastAPI -->|Task Queue| Redis
+        Redis -->|Consume| Celery
+        Celery -->|Execute| ML
     end
 
-    subgraph TEXT_ENCODER["🔵 NLP Pathway (ClinicalBERT)"]
-        direction TB
-        TOK["ClinicalBERT Tokenizer"]
-        BERT["ClinicalBERT Transformer\n(Pre-trained on MIMIC-III)"]
-        CLS["Extract [CLS] Token"]
-        PROJ_TXT["Dense Projection\n→ 256-dim"]
-        TOK --> BERT --> CLS --> PROJ_TXT
+    subgraph DB["Database Layer (Supabase)"]
+        Postgres[(PostgreSQL)]
+        Alembic["Alembic\n(Migrations)"]
     end
 
-    subgraph COATTN["🟣 Co-Attention Fusion"]
-        direction TB
-        MHA["Multi-Head Cross-Attention\n(Image ↔ Text)"]
-        CONCAT["Feature Concatenation\n→ 512-dim"]
-        MHA --> CONCAT
+    subgraph CICD["CI/CD (GitHub Actions)"]
+        GitRepo["GitHub Repo\n(Git LFS tracked)"]
+        Action["Sync Workflow"]
     end
 
-    subgraph CLASSIFIER["🟠 Severity Triage Head"]
-        direction TB
-        FC1["Dense(256) + BatchNorm + Dropout"]
-        FC2["Dense(128) + BatchNorm + Dropout"]
-        OUT["Dense(3, Softmax)"]
-        FC1 --> FC2 --> OUT
-    end
-
-    IMG --> IMAGE_ENCODER
-    TXT --> TEXT_ENCODER
-    PROJ_IMG --> COATTN
-    PROJ_TXT --> COATTN
-    CONCAT --> CLASSIFIER
-
-    classDef inputStyle fill:#e8f4f8,stroke:#17a2b8,stroke-width:2px,color:#000;
-    classDef imgStyle fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000;
-    classDef txtStyle fill:#cce5ff,stroke:#007bff,stroke-width:2px,color:#000;
-    classDef fusionStyle fill:#e2d9f3,stroke:#6f42c1,stroke-width:3px,color:#000;
-    classDef classStyle fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#000;
-
-    class IMG,TXT inputStyle;
-    class RESIZE,DENSE,GAP,PROJ_IMG imgStyle;
-    class TOK,BERT,CLS,PROJ_TXT txtStyle;
-    class MHA,CONCAT fusionStyle;
-    class FC1,FC2,OUT classStyle;
+    User -->|Upload X-Ray / Auth| React
+    React <-->|HTTPS API Calls| FastAPI
+    FastAPI <-->|SQLAlchemy ORM| Postgres
+    Celery <-->|Write Predictions| Postgres
+    
+    GitRepo -->|Auto-deploy| Frontend
+    GitRepo -->|Trigger| Action
+    Action -->|Sync Code & LFS Model| Backend
 ```
 
-### ML Pipeline Intricacies
-* **Vision Encoder:** Utilizes a `DenseNet-121` backbone, heavily augmented with random rotations and zooms, to extract spatial features robust to patient positioning.
-* **Text Encoder:** Employs `ClinicalBERT`, explicitly fine-tuned on clinical notes from the MIMIC-III database, to capture domain-specific medical semantics.
-* **Loss Function:** Optimized using **Focal Loss** to penalize errors on minority (severe) cases, handling severe clinical class imbalances in the MIT MIMIC-CXR dataset.
+## 🛠️ Technology Stack & Engineering Intricacies
 
----
+### 1. Frontend Client
+* **React & Vite:** Provides a blazing-fast, responsive Single Page Application (SPA).
+* **Vercel:** Automates frontend deployments on every push to the `main` branch.
 
-## 🏗️ System Architecture & Backend Design
+### 2. Backend & API
+* **FastAPI:** A high-performance Python framework serving as the main REST API interface.
+* **Security & Auth:** Stateless **JWT (JSON Web Tokens)** authentication. User passwords are cryptographically hashed via `passlib (bcrypt)`. FastAPI dependency injection (`Depends`) is used strictly to protect AI inference routes.
+* **Celery & Redis:** Implemented for asynchronous background task processing, preventing heavy AI inference jobs from blocking the main API thread.
 
-The system is built on a scalable, decoupled, modern tech stack designed for security and rapid AI inference.
+### 3. Database Layer
+* **PostgreSQL (Supabase):** Cloud database instance connected via an IPv4 connection pooler to bypass Hugging Face networking limitations.
+* **SQLAlchemy ORM:** Maps Python objects to database tables for secure, injection-free queries.
+* **Alembic:** Handles automated database schema migrations, ensuring local and production environments remain perfectly synchronized.
 
-### Tech Stack
-* **Frontend:** React, Tailwind CSS, Vite (Glassmorphic UI deployed on **Vercel**)
-* **Backend API:** FastAPI, Uvicorn, Python (RESTful architecture hosted on **Hugging Face Spaces Docker**)
-* **Database:** PostgreSQL (Fully managed cloud instance via **Supabase**)
-* **Deep Learning Framework:** TensorFlow 2, Keras, Hugging Face `transformers`
-* **Authentication:** Stateless JWT (JSON Web Tokens) with `passlib` bcrypt hashing.
-
-### Database & Authentication Flow
-CXR-MultiQuant implements an enterprise-grade security layer for clinical data:
-1. **User Registration:** Radiologists register via the `/auth/register` endpoint. Passwords are cryptographically salted and hashed using `bcrypt` before entering the PostgreSQL database.
-2. **Stateless JWT Authorization:** Upon login, the backend issues an expiring JWT. The React frontend stores this and attaches it as a `Bearer` token to all subsequent API requests.
-3. **Dependency Injection Security:** FastAPI's `Depends(get_current_user)` middleware guards all sensitive routes (like the AI `/predict` endpoint), ensuring only verified doctors can upload clinical data.
-4. **Data Persistence:** Prediction results, alongside the doctor's ID and timestamps, are securely persisted in the Supabase PostgreSQL database using `SQLAlchemy` ORM models.
-
----
-
-## 🚀 Deployment Automation (CI/CD)
-
-The entire production lifecycle is automated via **GitHub Actions**:
-1. **Frontend (Vercel):** Any push to the `main` branch automatically triggers Vercel to rebuild and redeploy the React interface.
-2. **Backend (Hugging Face Spaces):** A custom `.github/workflows/sync_to_hub.yml` action securely authenticates with Hugging Face using repository secrets and forces a synchronized push.
-3. **Dockerization:** Upon receiving the push, Hugging Face reads the root `Dockerfile`, isolates the `backend/` directory, installs `requirements.txt`, and boots the Uvicorn server on port `7860`.
+### 4. CI/CD & Deployment
+* **Hugging Face Spaces:** Houses the heavy backend Docker container (free 16GB RAM environment).
+* **GitHub Actions:** A custom YAML workflow syncs code securely from GitHub to Hugging Face on every commit.
+* **Git LFS (Large File Storage):** Used to bypass Git's 100MB limit, allowing the massive deep learning model to be securely version-controlled and deployed.
 
 ---
 
 ## 💻 Local Development
 
-### 1. Database Setup
-Ensure you have a PostgreSQL instance running. Copy `backend/.env.example` to `backend/.env` and update `DATABASE_URL` with your connection string.
+### Prerequisites
+* Python 3.12+
+* Node.js & npm
+* PostgreSQL server (or cloud DB)
+* Redis server (for Celery)
 
-### 2. Start the Backend (FastAPI)
+### Backend Setup
 ```bash
 cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Run Alembic migrations to build tables
+# Run migrations
 alembic upgrade head
 
-# Boot the server (Runs on port 8000)
+# Start Redis (in a separate terminal)
+redis-server
+
+# Start Celery Worker (in a separate terminal)
+celery -A worker.celery worker --loglevel=info
+
+# Start FastAPI server
 uvicorn main:app --reload
 ```
 
-### 3. Start the Frontend (React)
-Open a separate terminal window:
+### Frontend Setup
 ```bash
 cd frontend
 npm install
