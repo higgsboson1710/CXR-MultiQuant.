@@ -17,6 +17,10 @@ if config.config_file_name is not None:
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import models
+from database import SQLALCHEMY_DATABASE_URL
+
+# Set the SQLAlchemy URL from our env-backed database module
+config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
