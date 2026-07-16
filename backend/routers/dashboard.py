@@ -38,5 +38,9 @@ def trigger_report_generation(
     current_user: models.User = Depends(get_current_user)
 ):
     # Trigger the Celery background task
-    task = generate_weekly_report.delay(current_user.id)
-    return {"message": "Report generation started in the background", "task_id": task.id}
+    try:
+        task = generate_weekly_report.delay(current_user.id)
+        return {"message": "Report generation started in the background", "task_id": task.id}
+    except Exception as e:
+        print(f"Failed to trigger Celery task: {e}")
+        return {"message": "Report generation is currently unavailable.", "task_id": None}
