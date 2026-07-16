@@ -1,3 +1,11 @@
+---
+title: CXR-MultiQuant Backend
+emoji: 🫁
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
 # CXR-MultiQuant: Multimodal AI for Clinical Triage
 
 > 🚀 **Live Demo:** [https://cxr-multi-quant.vercel.app/](https://cxr-multi-quant.vercel.app/)
