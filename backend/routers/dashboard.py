@@ -5,6 +5,7 @@ from database import get_db
 import models, schemas
 from dependencies import get_current_user
 from services.cache import get_cached_dashboard, set_cached_dashboard
+from tasks import generate_weekly_report
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -31,3 +32,11 @@ def get_dashboard_data(
     set_cached_dashboard(current_user.id, serialized_records)
 
     return records
+
+@router.post("/report/generate")
+def trigger_report_generation(
+    current_user: models.User = Depends(get_current_user)
+):
+    # Trigger the Celery background task
+    task = generate_weekly_report.delay(current_user.id)
+    return {"message": "Report generation started in the background", "task_id": task.id}
