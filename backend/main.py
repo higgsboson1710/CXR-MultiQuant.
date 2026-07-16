@@ -11,7 +11,12 @@ import uvicorn
 import keras
 import time
 from routers import auth, dashboard
-
+from sqlalchemy.orm import Session
+from database import get_db, engine, SessionLocal, Base
+from models import User, DashboardData
+from utils.security import get_password_hash
+from fastapi import Depends
+from dependencies import get_current_user
 # Global Fix for Transformers loading PyTorch weights in Keras 3
 if not hasattr(keras.backend, 'set_value'):
     keras.backend.set_value = lambda x, y: x.assign(y) if hasattr(x, 'assign') else None
@@ -124,11 +129,35 @@ def build_final_model():
     output = tf.keras.layers.Dense(3, activation='softmax')(x)
     return tf.keras.Model(inputs=[image_input, input_ids, attention_mask], outputs=output)
 
-# --- STEP 1: LOAD AI MODELS ON STARTUP ---
+# --- STEP 1: LOAD AI MODELS & DB ON STARTUP ---
 @app.on_event("startup")
 async def load_ai_models():
+    # --- AUTOMATIC DATABASE SETUP ---
+    print("Initializing Database...")
+    Base.metadata.create_all(bind=engine)
+    
+    db = SessionLocal()
+    try:
+        admin_user = db.query(User).filter(User.email == "admin@hospital.org").first()
+        if not admin_user:
+            print("Creating default admin account...")
+            hashed_pw = get_password_hash("admin123")
+            new_admin = User(
+                email="admin@hospital.org",
+                password_hash=hashed_pw,
+                first_name="Admin",
+                last_name="Doctor"
+            )
+            db.add(new_admin)
+            db.commit()
+            print("Default admin created successfully.")
+    except Exception as e:
+        print(f"Database setup error: {e}")
+    finally:
+        db.close()
+
     global model, tokenizer
-    print("⏳ Booting up AI Inference Engine...")
+    print("Booting up AI Inference Engine...")
     print("1/2: Loading ClinicalBERT Tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained("emilyalsentzer/Bio_ClinicalBERT")
     
@@ -137,13 +166,18 @@ async def load_ai_models():
     model_path = os.path.join(os.path.dirname(__file__), "best_cxr_model_final.h5")
     model.load_weights(model_path, by_name=True)
     
-    print("✅ AI Models Loaded Successfully in Memory!")
+    print("AI Models Loaded Successfully in Memory!")
 
 # Prediction Route
 @app.post("/predict")
 async def predict_severity(
     image: UploadFile = File(...),
-    report: str = Form(...)
+    report: str = Form(""),
+    patient_name: str = Form("Unknown Patient"),
+    patient_age: str = Form(None),
+    patient_gender: str = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     if not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File provided is not an image.")
@@ -182,8 +216,26 @@ async def predict_severity(
         max_idx = np.argmax(probs)
         final_severity = classes[max_idx]
 
-        # --- 4. FORMAT RESPONSE FOR REACT FRONTEND ---
+        # --- 4. SAVE TO DATABASE ---
+        new_record = DashboardData(
+            filename=image.filename,
+            patient_name=patient_name,
+            patient_age=int(patient_age) if patient_age else None,
+            patient_gender=patient_gender,
+            clinical_notes=report,
+            severity=final_severity,
+            prob_mild=probs[0],
+            prob_moderate=probs[1],
+            prob_severe=probs[2],
+            owner_id=current_user.id
+        )
+        db.add(new_record)
+        db.commit()
+        db.refresh(new_record)
+
+        # --- 5. FORMAT RESPONSE FOR REACT FRONTEND ---
         response = {
+            "id": new_record.id,
             "filename": image.filename,
             "prediction": {
                 "severity": final_severity,
@@ -195,7 +247,7 @@ async def predict_severity(
             }
         }
         
-        print(f"✅ Analysis Complete! Result: {final_severity}")
+        print(f"✅ Analysis Complete & Saved! Result: {final_severity}")
         return response
 
     except Exception as e:

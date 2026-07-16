@@ -19,3 +19,5 @@ Pillow==10.2.0
 numpy==1.26.4
 transformers==4.37.2
 torch
+pytest
+httpx

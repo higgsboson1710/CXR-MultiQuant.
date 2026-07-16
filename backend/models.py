@@ -18,6 +18,10 @@ class DashboardData(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String, index=True)
+    patient_name = Column(String, default="Unknown Patient")
+    patient_age = Column(Integer, nullable=True)
+    patient_gender = Column(String, nullable=True)
+    clinical_notes = Column(String, nullable=True)
     severity = Column(String)
     prob_mild = Column(Float)
     prob_moderate = Column(Float)
